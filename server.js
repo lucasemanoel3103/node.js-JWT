@@ -27,6 +27,7 @@ app.post('/login', (req, res) => {
     }
 })
 
+// Middleware para autenticação de token
 const authenticateToken = (req, res, next) => {
     const token = req.headers['authorization'];
 
@@ -39,7 +40,18 @@ const authenticateToken = (req, res, next) => {
     })
 };
 
+// Rota Autenticada
 app.get('/protected', authenticateToken, (req, res) => {
+    res.status(200).json({ message: 'Acesso permitido!'});
+});
+
+//Rota autenticada e privada para o usuario admin
+app.get('/admin', authenticateToken, (req, res) => {
+    if(req.user.role !== 'admin') {
+        return res.status(403).json({ message: 'Acesso negado!' });
+    }
+    res.status(200).json({ message: 'Bem-vindo ao painel de admin!' });
+});
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
