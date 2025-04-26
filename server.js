@@ -20,11 +20,26 @@ app.post('/login', (req, res) => {
     
     const user = users.find(user => user.username === username);
     if(user) {
-        const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, SECRET_KEY, { expiresIn: '1h' });  
+        const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, SECRET_KEY, { expiresIn: '1h' });
+        res.status(200).json({ message: token });  
     } else { 
        res.status(401).json({ message: 'Usuário ou senha inválida!' });
     }
 })
+
+const authenticateToken = (req, res, next) => {
+    const token = req.headers['authorization'];
+
+    if(!token) return res.status(403).json ({ message: 'Token não fornecido!' });
+
+    jwt.verify(token, SECRET_KEY, (err, user) => {
+        if(err) return res.status(403).json({ message: 'Token inválido!' });
+        req.user = user;
+        next()
+    })
+};
+
+app.get('/protected', authenticateToken, (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
